@@ -11,7 +11,8 @@ interface MinesArr {
 
 const Mines: React.FC = () => {
   const [numberOfMines, setNumberOfMines] = useState<number>(1);
-  // const [isGameOver, setIsGameOver] = useState<boolean>(false);
+  const [betValue, setBetValue] = useState<number>(1);
+  const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [isInputDisabled, setIsInputDisabled] = useState<boolean>(false);
   const [minesArr, SetMinesArr] = useState<MinesArr[]>(
     new Array(25).fill({ isHidden: true, isMine: false, opened: false })
@@ -40,7 +41,7 @@ const Mines: React.FC = () => {
   function handleClickOnMines(index: number) {
     setIsInputDisabled(true);
 
-    if (!minesArr[index].opened) {
+    if (!minesArr[index].opened && !isGameOver) {
       setTimeout(() => {
         // show card onclick
         const updateMine = [...minesArr];
@@ -53,32 +54,36 @@ const Mines: React.FC = () => {
           updateMine.map((item) => (item.isHidden = false));
           playSound(200);
           SetMinesArr(updateMine);
-          // setIsGameOver(true);
+          setIsGameOver(true);
         } else {
           playSound(100);
         }
-      }, 1000);
+      }, 500);
     }
   }
 
   return (
-    <section className="grid gap-5 bg-[#0f212e] place-items-center mt-20">
+    <section className="grid gap-5 place-items-center mt-20">
       <div className="grid gap-5 grid-cols-5 place-items-center">
         {minesArr.map((item, i) => (
           <div
             key={i}
             onClick={() => handleClickOnMines(i)}
-            className={`w-16 h-16 text-4xl grid place-items-center ${
-              item.opened ? "bg-[#071824]" : "bg-[#2f4553] hover:bg-[#496d83]"
-            } rounded cursor-pointer hover:-translate-y-1`}
+            className={`w-16 h-16 text-4xl grid place-items-center drop-shadow ${
+              item.opened
+                ? "bg-zinc-100"
+                : isGameOver
+                ? "bg-zinc-200"
+                : "bg-zinc-300 hover:bg-zinc-400 hover:-translate-y-1"
+            } rounded cursor-pointer`}
           >
             {!item.isHidden ? (
               item.isMine ? (
-                <FaBomb className="fill-rose-600" />
+                <FaBomb className="fill-zinc-900" />
               ) : (
                 <GiCutDiamond
-                  fontSize={item.opened ? 48 : 32}
-                  className={item.opened ? "fill-lime-400" : "fill-lime-800"}
+                  fontSize={item.opened ? 48 : 40}
+                  className={item.opened ? "fill-rose-500" : "fill-rose-800"}
                 />
               )
             ) : (
@@ -87,23 +92,23 @@ const Mines: React.FC = () => {
           </div>
         ))}
       </div>
-      <div className="flex items-center gap-4">
-        <label
-          className="text-lg text-gray-400 font-medium"
-          htmlFor="NumberOfMines"
-        >
-          Mines
-        </label>
-        <input
-          className="border-2 text-gray-100 border-[#2f4553] outline-none px-4 rounded bg-[#2f4553] py-1 focus:border-[#496d83]"
-          min={1}
-          value={numberOfMines}
-          onChange={(e) => setNumberOfMines(Number(e.target.value))}
-          max={minesArr.length - 1}
-          type="number"
-          id="NumberOfMines"
-          disabled={isInputDisabled}
-        />
+      
+      <div className="flex w-full max-w-md items-center justify-between mt-10">
+        <div className="flex items-center gap-2">
+          <label className="text-zinc-800" htmlFor="NumberOfMines">Mines</label>
+          <select disabled={isInputDisabled} onChange={e => setNumberOfMines(Number(e.target.value))} value={numberOfMines} id="NumberOfMines" className="border-2 text-zinc-900 border-zinc-200 outline-none px-4 rounded bg-zinc-50 py-1 focus:border-zinc-400">
+            {Array.from(Array(minesArr.length - 1).keys()).map((e) => (
+              <option key={e} value={e + 1}>
+                {e + 1}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2">
+            <label htmlFor="betamt">Bet Amount</label>
+            <input className="border-2 text-zinc-900 border-zinc-200 outline-none px-4 rounded bg-zinc-50 py-1 focus:border-zinc-400" step={1} min={1} max={5000} type="number" id="betamt" value={betValue} onChange={e => setBetValue(Number(e.target.value))} />
+        </div>
       </div>
     </section>
   );
